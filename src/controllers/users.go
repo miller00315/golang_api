@@ -19,7 +19,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 // UpdateUser atualiza um usuário
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("udate user"))
+	w.Write([]byte("update user"))
 }
 
 // DeleteUser apaga um usuário

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"api/src/config"
 	"api/src/router"
 	"fmt"
 	"log"
@@ -8,9 +9,11 @@ import (
 )
 
 func main() {
-	fmt.Println("Api iniciada")
+	config.Load()
+
+	fmt.Printf("Api started at port %d", config.Port)
 
 	router := router.Generate()
 
-	log.Fatal(http.ListenAndServe(":5000", router))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), router))
 }

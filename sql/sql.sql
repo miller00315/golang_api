@@ -1,3 +1,5 @@
+CREATE USER 'golang'@'localhost' IDENTIFIED BY 'golang';
+
 CREATE DATABASE IF NOT EXISTS devbook;
 USE devbook;
 DROP TABLE IF EXISTS users;
@@ -7,6 +9,8 @@ CREATE TABLE users(
     name varchar(50) not null,
     nick varchar(50) not null unique,
     email varchar(50) not null unique,
-    password varchar(20) not null unique,
+    password varchar(20) not null,
     createdAt timestamp default current_timestamp()
 ) ENGINE=INNODB;
+
+GRANT ALL PRIVILEGES ON devbook.* TO 'golang'@'localhost';

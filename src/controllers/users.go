@@ -2,12 +2,10 @@ package controllers
 
 import (
 	"api/src/authentication"
-	"api/src/database"
 	"api/src/models"
 	"api/src/repositories"
 	"api/src/responses"
 	"api/src/security"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -39,7 +37,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -64,7 +62,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	userQuery := strings.ToLower(r.URL.Query().Get("user"))
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -95,7 +93,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -157,7 +155,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -198,7 +196,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -239,7 +237,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -281,7 +279,7 @@ func UnFollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -310,7 +308,7 @@ func GetFollowers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -342,7 +340,7 @@ func GetFollowing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -399,7 +397,7 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, error := setDatabase(w)
+	db, error := SetDatabase(w)
 
 	if error != nil {
 		return
@@ -434,16 +432,4 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.JSON(w, http.StatusNoContent, nil)
-}
-
-func setDatabase(w http.ResponseWriter) (*sql.DB, error) {
-
-	db, error := database.Connect()
-
-	if error != nil {
-		responses.Error(w, http.StatusInternalServerError, error)
-		return nil, error
-	}
-
-	return db, nil
 }

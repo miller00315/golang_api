@@ -115,7 +115,82 @@ func (repository Publications) GetPublication(publicationID uint64) (models.Publ
 }
 
 // UpdatePublication
-func (repository Publications) UpdatePublication(publication models.Publication) {}
+func (repository Publications) UpdatePublication(publication models.Publication, publicationID uint64) error {
+
+	statement, error := repository.db.Prepare("update publications set title = ?, content = ? where id = ?")
+
+	if error != nil {
+		return error
+	}
+
+	defer statement.Close()
+
+	if _, error := statement.Exec(publication.Title, publication.Content, publicationID); error != nil {
+		return error
+	}
+
+	return nil
+}
 
 // DeletePublication
-func (repository Publications) DeletePublication(publicationID uint64) {}
+func (repository Publications) DeletePublication(publicationID uint64) error {
+	statement, error := repository.db.Prepare("DELETE FROM publications WHERE id = ?")
+
+	if error != nil {
+		return error
+	}
+
+	defer statement.Close()
+
+	if _, error = statement.Exec(publicationID); error != nil {
+		return error
+	}
+
+	return nil
+}
+
+// ListUserPublications
+func (repository Publications) ListUserPublications(userID uint64) ([]models.Publication, error) {
+	lines, error := repository.db.Query(
+		`select p.*, u.nick from publications p 
+		join users u on u.id = p.author_id 
+		where p.author_id = ?`,
+		userID)
+
+	if error != nil {
+		return nil, nil
+	}
+
+	defer lines.Close()
+
+	var publications []models.Publication
+
+	for lines.Next() {
+		var publication models.Publication
+
+		if error = lines.Scan(
+			&publication.ID,
+			&publication.Title,
+			&publication.Content,
+			&publication.AuthorID,
+			&publication.Likes,
+			&publication.CreatedAt,
+			&publication.AuthorNick,
+		); error != nil {
+			return nil, error
+		}
+
+		publications = append(publications, publication)
+	}
+
+	return publications, nil
+
+}
+
+func (repository Publications) LikePublication(publicationID uint64) error {
+	return nil
+}
+
+func (repository Publications) UnLikePublication(publicationID uint64) error {
+	return nil
+}

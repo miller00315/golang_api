@@ -124,14 +124,14 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenUserId, error := authentication.GetUserId(r)
+	tokenUserID, error := authentication.GetUserId(r)
 
 	if error != nil {
 		responses.Error(w, http.StatusUnauthorized, error)
 		return
 	}
 
-	if userID != tokenUserId {
+	if userID != tokenUserID {
 		responses.Error(w, http.StatusForbidden, errors.New("Its not possible update others user data"))
 		return
 	}
@@ -184,14 +184,14 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenUserId, error := authentication.GetUserId(r)
+	tokenUserID, error := authentication.GetUserId(r)
 
 	if error != nil {
 		responses.Error(w, http.StatusUnauthorized, error)
 		return
 	}
 
-	if userID != tokenUserId {
+	if userID != tokenUserID {
 		responses.Error(w, http.StatusForbidden, errors.New("Its not possible delete others users"))
 		return
 	}

@@ -183,7 +183,154 @@ func UpdatePublication(w http.ResponseWriter, r *http.Request) {
 		responses.Error(w, http.StatusBadRequest, error)
 		return
 	}
+
+	if error = repository.UpdatePublication(publication, publicationID); error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
 }
 
 // DeletePublication
-func DeletePublication(w http.ResponseWriter, r *http.Request) {}
+func DeletePublication(w http.ResponseWriter, r *http.Request) {
+	userID, error := authentication.GetUserId(r)
+
+	if error != nil {
+		responses.Error(w, http.StatusUnauthorized, error)
+		return
+	}
+
+	params := mux.Vars(r) // Pega todos os parâmetros da rota
+
+	publicationID, error := strconv.ParseUint(params["publicationId"], 10, 64)
+
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	db, error := SetDatabase(w)
+
+	if error != nil {
+		return
+	}
+
+	defer db.Close()
+
+	repository := repositories.NewPublicationRepository(db)
+
+	databasePublication, error := repository.GetPublication(publicationID)
+
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	if databasePublication.AuthorID != userID {
+		responses.Error(w, http.StatusForbidden, errors.New("Cant delete of others users"))
+		return
+	}
+
+	error = repository.DeletePublication(publicationID)
+
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
+
+}
+
+// ListUserPublications
+func ListUserPublications(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r) // Pega todos os parâmetros da rota
+
+	userID, error := strconv.ParseUint(params["userId"], 10, 64)
+
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	db, error := SetDatabase(w)
+
+	if error != nil {
+		return
+	}
+
+	defer db.Close()
+
+	repository := repositories.NewPublicationRepository(db)
+
+	publications, error := repository.ListUserPublications(userID)
+
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, publications)
+
+}
+
+// LikePublication
+func LikePublication(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r) // Pega todos os parâmetros da rota
+
+	publicationID, error := strconv.ParseUint(params["publicationId"], 10, 64)
+
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	db, error := SetDatabase(w)
+
+	if error != nil {
+		return
+	}
+
+	defer db.Close()
+
+	repository := repositories.NewPublicationRepository(db)
+
+	if error = repository.LikePublication(publicationID); error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
+
+}
+
+// UnlikePublication
+func UnLikePublication(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r) // Pega todos os parâmetros da rota
+
+	publicationID, error := strconv.ParseUint(params["publicationId"], 10, 64)
+
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	db, error := SetDatabase(w)
+
+	if error != nil {
+		return
+	}
+
+	defer db.Close()
+
+	repository := repositories.NewPublicationRepository(db)
+
+	if error = repository.UnLikePublication(publicationID); error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
+
+}

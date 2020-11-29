@@ -1,7 +1,9 @@
 CREATE USER 'golang'@'localhost' IDENTIFIED BY 'golang';
 
 CREATE DATABASE IF NOT EXISTS devbook;
+
 USE devbook;
+
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users(

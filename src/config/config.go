@@ -14,6 +14,8 @@ var (
 	ConnectionString = ""
 	// Api port
 	Port = 0
+	// Key of jwt to assign the token
+	SecretKey []byte
 )
 
 // Load start behavior variables
@@ -36,4 +38,6 @@ func Load() {
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
 	)
+
+	SecretKey = []byte(os.Getenv("SECRET_KEY"))
 }

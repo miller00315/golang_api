@@ -48,7 +48,9 @@ func (repository Publications) ListPublications(userID uint64) ([]models.Publica
 	inner join users u on u.id = p.author_id 
 	inner join followers f on p.author_id = f.user_id 
 	where u.id = ? or f.follower_id = ?
-	`, userID, userID)
+	order by 1 desc`,
+		userID, userID,
+	)
 
 	if error != nil {
 		return nil, nil

@@ -64,7 +64,34 @@ func CreatePublication(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListPublications
-func ListPublications(w http.ResponseWriter, r *http.Request) {}
+func ListPublications(w http.ResponseWriter, r *http.Request) {
+	userID, error := authentication.GetUserId(r)
+
+	if error != nil {
+		responses.Error(w, http.StatusUnauthorized, error)
+		return
+	}
+
+	db, error := SetDatabase(w)
+
+	if error != nil {
+		return
+	}
+
+	defer db.Close()
+
+	repository := repositories.NewPublicationRepository(db)
+
+	publications, error := repository.ListPublications(userID)
+
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, publications)
+
+}
 
 // GetPublication
 func GetPublication(w http.ResponseWriter, r *http.Request) {

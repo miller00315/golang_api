@@ -41,7 +41,43 @@ func (repository Publications) CreatePublication(publication models.Publication)
 }
 
 // ListPublications
-func (repository Publications) ListPublications() {}
+func (repository Publications) ListPublications(userID uint64) ([]models.Publication, error) {
+
+	lines, error := repository.db.Query(`
+	SELECT distinct p.*, u.nick from publications p 
+	inner join users u on u.id = p.author_id 
+	inner join followers f on p.author_id = f.user_id 
+	where u.id = ? or f.follower_id = ?
+	`, userID, userID)
+
+	if error != nil {
+		return nil, nil
+	}
+
+	defer lines.Close()
+
+	var publications []models.Publication
+
+	for lines.Next() {
+		var publication models.Publication
+
+		if error = lines.Scan(
+			&publication.ID,
+			&publication.Title,
+			&publication.Content,
+			&publication.AuthorID,
+			&publication.Likes,
+			&publication.CreatedAt,
+			&publication.AuthorNick,
+		); error != nil {
+			return nil, error
+		}
+
+		publications = append(publications, publication)
+	}
+
+	return publications, nil
+}
 
 // GetPublication
 func (repository Publications) GetPublication(publicationID uint64) (models.Publication, error) {

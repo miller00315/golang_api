@@ -6,6 +6,7 @@ import (
 	"api/src/models"
 	"api/src/repositories"
 	"api/src/responses"
+	"api/src/security"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -391,6 +392,12 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var password models.Password
+
+	if error = json.Unmarshal(requestBody, &password); error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
 
 	db, error := setDatabase(w)
 
@@ -400,6 +407,33 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
+	repository := repositories.NewUserRepository(db)
+
+	dbPassword, error := repository.GetPassword(userID)
+
+	if error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	if error = security.CheckPassword(dbPassword, password.CurrentPassword); error != nil {
+		responses.Error(w, http.StatusForbidden, errors.New("The password do not exist in database"))
+		return
+	}
+
+	hashPassword, error := security.Hash(password.NewPassword)
+
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	if error = repository.UpdatePassword(string(hashPassword), userID); error != nil {
+		responses.Error(w, http.StatusInternalServerError, error)
+		return
+	}
+
+	responses.JSON(w, http.StatusNoContent, nil)
 }
 
 func setDatabase(w http.ResponseWriter) (*sql.DB, error) {

@@ -10,3 +10,10 @@ values
 (1, 2),
 (3, 1),
 (1, 3);
+
+insert into publications(title, content, author_id)
+values
+("teste", "teste", 1),
+("teste", "teste", 2),
+("teste", "teste", 3),
+("teste", "teste", 4);

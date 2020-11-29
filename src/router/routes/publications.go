@@ -44,7 +44,7 @@ var publicationsRoutes = []Route{
 	},
 	{
 		URI:                    "/publications/{publicationId}/like",
-		Method:                 http.MethodGet,
+		Method:                 http.MethodPost,
 		Function:               controllers.LikePublication,
 		RequiresAuthentication: true,
 	},

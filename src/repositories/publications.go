@@ -187,6 +187,7 @@ func (repository Publications) ListUserPublications(userID uint64) ([]models.Pub
 
 }
 
+// LikePublication
 func (repository Publications) LikePublication(publicationID uint64) error {
 	statement, error := repository.db.Prepare("UPDATE publications SET likes = likes + 1 WHERE id = ?")
 
@@ -203,8 +204,13 @@ func (repository Publications) LikePublication(publicationID uint64) error {
 	return nil
 }
 
+// UnLikePublication
 func (repository Publications) UnLikePublication(publicationID uint64) error {
-	statement, error := repository.db.Prepare("UPDATE publications SET likes = likes - 1 WHERE id = ?")
+	statement, error := repository.db.Prepare(`
+	UPDATE publications SET likes = 
+	CASE WHEN likes > 0 THEN likes - 1 
+	ELSE likes END
+	WHERE id = ?`)
 
 	if error != nil {
 		return error

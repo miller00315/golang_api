@@ -361,6 +361,47 @@ func GetFollowing(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, following)
 }
 
+// UpdatePassword update user password
+func UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	tokenUserID, error := authentication.GetUserId(r)
+
+	if error != nil {
+		responses.Error(w, http.StatusUnauthorized, error)
+		return
+	}
+
+	params := mux.Vars(r)
+
+	userID, error := strconv.ParseUint(params["userID"], 10, 64)
+
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+	if tokenUserID != userID {
+		responses.Error(w, http.StatusForbidden, errors.New("Cannot alter password of others users"))
+		return
+	}
+
+	requestBody, error := ioutil.ReadAll(r.Body)
+
+	if error != nil {
+		responses.Error(w, http.StatusBadRequest, error)
+		return
+	}
+
+
+	db, error := setDatabase(w)
+
+	if error != nil {
+		return
+	}
+
+	defer db.Close()
+
+}
+
 func setDatabase(w http.ResponseWriter) (*sql.DB, error) {
 
 	db, error := database.Connect()

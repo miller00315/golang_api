@@ -140,7 +140,7 @@ func (repository Users) Delete(ID uint64) error {
 	return nil
 }
 
-// SearchByEmail get a user by email 
+// SearchByEmail get a user by email
 func (repository Users) SearchByEmail(email string) (models.User, error) {
 	line, error := repository.db.Query("SELECT id, password FROM users where email = ?", email)
 
@@ -153,10 +153,114 @@ func (repository Users) SearchByEmail(email string) (models.User, error) {
 	var user models.User
 
 	if line.Next() {
-		if error = line.Scan(&user.ID, & user.Password); error != nil {
+		if error = line.Scan(&user.ID, &user.Password); error != nil {
 			return models.User{}, error
 		}
 	}
 
 	return user, nil
+}
+
+// Follow register the follower of a user
+func (repository Users) Follow(userID, followerID uint64) error {
+
+	statement, error := repository.db.Prepare(
+		"insert ignore into followers (user_id, follower_id) values (?, ?)", // Ignore if already exists
+	)
+
+	if error != nil {
+		return error
+	}
+
+	defer statement.Close()
+
+	if _, error = statement.Exec(userID, followerID); error != nil {
+		return error
+	}
+
+	return nil
+}
+
+// UnFollow permits unfollow a user
+func (repository Users) UnFollow(userID, followerID uint64) error {
+	statement, error := repository.db.Prepare("DELETE FROM followers WHERE user_id = ? and follower_id = ?")
+
+	if error != nil {
+		return error
+	}
+
+	defer statement.Close()
+
+	if _, error = statement.Exec(userID, followerID); error != nil {
+		return error
+	}
+
+	return nil
+}
+
+func (repository Users) GetFollowers(userID uint64) ([]models.User, error) {
+	lines, error := repository.db.Query(`
+		select u.id, u.name, u.nick, u.email, u.createdAt
+		from users u inner join followers f on u.id = f.follower_id where f.user_id = ?`,
+		userID)
+
+	if error != nil {
+		return nil, error
+	}
+
+	defer lines.Close()
+
+	var users []models.User
+
+	for lines.Next() {
+		var user models.User
+
+		if error = lines.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Nick,
+			&user.Email,
+			&user.CreatedAt,
+		); error != nil {
+			return nil, error
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+// GetFollowing
+func (repository Users) GetFollowing(userID uint64) ([]models.User, error) {
+	lines, error := repository.db.Query(`
+		select u.id, u.name, u.nick, u.email, u.createdAt
+		from users u inner join followers f on u.id = f.user_id where f.follower_id = ?`,
+		userID)
+
+	if error != nil {
+		return nil, error
+	}
+
+	defer lines.Close()
+
+	var users []models.User
+
+	for lines.Next() {
+		var user models.User
+
+		if error = lines.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Nick,
+			&user.Email,
+			&user.CreatedAt,
+		); error != nil {
+			return nil, error
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
 }
